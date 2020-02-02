@@ -6,6 +6,8 @@ import math
 import datetime as dt
 import pandas as pd
 
+import pydriller
+pydriller.Commit
 # Multi-dropdown options
 from controls import COUNTIES, WELL_STATUSES, WELL_TYPES, WELL_COLORS
 

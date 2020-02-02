@@ -76,6 +76,25 @@ def show_mqtt_data_callback(n_clicks):
     chart_toast = make_toasts_chart(df)
     return str(list_messages), chart_toast
 
+@app.callback(
+    Output("temperature-chart", "figure"),
+    [
+        Input("show-mqtt-button", "n_clicks"),
+        Input('graph-update', 'n_intervals')]
+)
+
+def plot_tempreature(n_clicks, interval):
+    list_messages = ""
+    print(interval)
+    # print (MQTTCONFIG.SUBSCRIPTIONS)
+    # for topic in MQTTCONFIG.SUBSCRIPTIONS:
+    #     df = load_topic_df(topic)
+    #     list_messages += str(df)
+    
+    df = load_topic_df("houseMonitor/temperature")
+    
+    chart_temp = make_temperature_chart(df)
+    return  chart_temp
 
 
 @app.callback(

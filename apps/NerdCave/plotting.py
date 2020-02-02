@@ -5,11 +5,12 @@ import dash
 import math
 import datetime as dt
 import pandas as pd
-
-
+import datetime
+import numpy as np
 from utils import *
 
 import plotly.graph_objects as go
+
 
 def make_count_figure(df, points, well_statuses, well_types, year_slider):
 
@@ -55,7 +56,7 @@ def make_count_figure(df, points, well_statuses, well_types, year_slider):
     return figure
 
 
-def make_pie_figure(df,points,  well_statuses, well_types, year_slider):
+def make_pie_figure(df, points,  well_statuses, well_types, year_slider):
 
     layout_pie = copy.deepcopy(layout)
 
@@ -107,7 +108,7 @@ def make_pie_figure(df,points,  well_statuses, well_types, year_slider):
     return figure
 
 
-def make_aggregate_figure(dataset, df,points, well_statuses, well_types, year_slider, main_graph_hover):
+def make_aggregate_figure(dataset, df, points, well_statuses, well_types, year_slider, main_graph_hover):
 
     layout_aggregate = copy.deepcopy(layout)
 
@@ -223,10 +224,10 @@ def make_individual_figure(dataset, points, main_graph_hover):
 
 
 def make_main_figure(df, points,
-    well_statuses, well_types, year_slider, selector, main_graph_layout
-):
+                     well_statuses, well_types, year_slider, selector, main_graph_layout
+                     ):
 
-    dff = filter_dataframe(df,points, well_statuses, well_types, year_slider)
+    dff = filter_dataframe(df, points, well_statuses, well_types, year_slider)
 
     traces = []
     for well_type, dfff in dff.groupby("Well_Type"):
@@ -258,9 +259,76 @@ def make_main_figure(df, points,
 def make_toasts_chart(df: pd.DataFrame):
 
     fig = go.Figure(data=[go.Bar(
-        x= df.index,
-        y= df["Value"].values.astype(float),
-       #  width=[0.8, 0.8, 0.8, 3.5, 4] # customize width here
+        x=df.index,
+        y=df["Value"].values.astype(float),
+        width=60*1000  # customize width here
     )])
+    fig.update_layout(dict(title="Seconds toasting bread per day"))
+    return {"data": fig.data, "layout": fig.layout}
 
-    return {"data": fig.data, "layout":fig.layout}
+
+def make_temperature_chart(df: pd.DataFrame):
+
+    fig = go.Figure(data=[go.Scatter(
+        x=df.index,
+        y=df["Value"].values.astype(float),
+        mode = "lines+markers"
+    )])
+    fig.update_layout(dict(title="Temperature"))
+    return {"data": fig.data, "layout": fig.layout}
+
+def holidays(df:pd.DataFrame):
+    year = datetime.datetime.now().year
+
+    d1 = datetime.date(year, 8, 1)
+    d2 = datetime.date(year+1, 7, 15)
+
+    delta = d2 - d1
+
+    # gives me a list with datetimes for each day a year
+    dates_in_year = [d1 + datetime.timedelta(i) for i in range(delta.days+1)]
+
+    # gives [0,1,2,3,4,5,6,0,1,2,3,4,5,6,…] (ticktext in xaxis dict translates this to weekdays
+    weekdays_in_year = [i.weekday() for i in dates_in_year]
+
+    # gives [1,1,1,1,1,1,1,2,2,2,2,2,2,2,…] name is self-explanatory
+    weeknumber_of_dates = [i.strftime("%Gww%V")[2:] for i in dates_in_year]
+
+    z = np.random.randint(2, size=(len(dates_in_year)))
+    # gives something like list of strings like '2018-01-25'for each date. Used in data trace to make good hovertext.
+    text = [str(i) for i in dates_in_year]
+    # 4cc417 green #347c17 dark green
+    colorscale = [[False, '#eeeeee'], [True, '#76cf63']]
+
+    data = [
+        go.Heatmap(
+            x=weeknumber_of_dates,
+            y=weekdays_in_year,
+            z=z,
+            text=text,
+            hoverinfo="text",
+            xgap=3,  # this
+            ygap=3,  # and this is used to make the grid-like apperance
+            showscale=False,
+            colorscale=colorscale
+        )
+    ]
+    layout = go.Layout(
+        title="activity chart",
+        height=280,
+        yaxis=dict(
+            showline=False, showgrid=False, zeroline=False,
+            tickmode="array",
+            ticktext=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            tickvals=[0, 1, 2, 3, 4, 5, 6],
+        ),
+        xaxis=dict(
+            showline=False, showgrid=False, zeroline=False,
+        ),
+        font={'size': 10, 'color': '#9e9e9e'},
+        plot_bgcolor=('#fff'),
+        margin=dict(t=40),
+    )
+
+    fig = go.FigureWidget(go.Figure(data=data, layout=layout))
+    return fig

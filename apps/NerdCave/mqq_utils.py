@@ -6,10 +6,10 @@ import pandas as pd
 import pathlib
 
 class MQTTCONFIG:
-    HOST = "mqtt.eclipse.org"
+    HOST = "192.168.1.23"
     PORT = 1883
     KEEPALIVE = 60
-    SUBSCRIPTIONS = ["house/light", "house/toast"]
+    SUBSCRIPTIONS = ["house/light", "house/toast", "busMonitor/departures", "houseMonitor/temperature"]
 
 def get_configured_mqtt_client(list_messages ):
     client = mqtt.Client()

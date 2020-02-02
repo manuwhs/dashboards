@@ -203,6 +203,20 @@ def get_layout(app):
             html.Div(
                 [
                     html.Div(
+                        [dcc.Graph(id="temperature-chart")],
+                        className="pretty_container seven columns",
+                    ),
+                ],
+                className="row flex-display",
+            ),
+            
+            dcc.Interval(
+            id='graph-update',
+            interval=1*1000
+        ),
+            html.Div(
+                [
+                    html.Div(
                         [dcc.Graph(id="pie_graph")],
                         className="pretty_container seven columns",
                     ),
